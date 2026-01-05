@@ -1,0 +1,5 @@
+[update]
+version=3.7
+reason_ro=Corectii la meniu si bugfix Auto Repair
+reason_en=Menu fixes and Auto Repair bugfix
+download_url=https://raw.githubusercontent.com/<org>/<repo>/main/LUX_Modified.lua
