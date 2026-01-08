@@ -1,4 +1,5 @@
-version=3.7
-reason_ro=Corecții meniu și bugfix Auto Repair
-reason_en=Menu fixes and Auto Repair bugfix
+version=3.9
+reason_ro=Testare Update
+reason_en=Update test
+
 
