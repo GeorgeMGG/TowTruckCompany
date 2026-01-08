@@ -1,6 +1,7 @@
-version=3.9
-reason_ro=Testare Update 1 
-reason_en=Update test 1
+version=3.8
+reason_ro=Testare Update
+reason_en=Update test
+
 
 
 
