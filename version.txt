@@ -1,6 +1,7 @@
-version=3.8
-reason_ro= Test final Update
-reason_en= Final test Update
+version=3.7
+reason_ro=Test final Update
+reason_en=Final test Update
+
 
 
 
