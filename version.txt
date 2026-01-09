@@ -1,6 +1,6 @@
 version=3.8
-reason_ro=Testare Update
-reason_en=Update test
+reason_ro=Test final Update
+reason_en=Final test Update
 
 
 
