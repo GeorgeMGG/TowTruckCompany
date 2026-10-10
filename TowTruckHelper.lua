@@ -1,8 +1,8 @@
 script_name("TowTruckHelper")
 script_author("George_VP")
 script_description("TowTruckCompany")
-script_version("3.6")
-local LOCAL_VERSION = "3.6"
+script_version("3.7")
+local LOCAL_VERSION = "3.7"
 local VERSION_URL = "https://raw.githubusercontent.com/GeorgeMGG/TowTruckCompany/refs/heads/main/version.txt"
 local SCRIPT_URL  = "https://raw.githubusercontent.com/GeorgeMGG/TowTruckCompany/refs/heads/main/TowTruckHelper.lua"
 
