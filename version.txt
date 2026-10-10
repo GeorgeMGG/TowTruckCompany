@@ -1,6 +1,6 @@
-version=3.5
-reason_ro=Test final Update
-reason_en=Final test Update
+version=3.7
+reason_ro=Adaugata optiunea de a opri sau activa optiunea de detectare automata a raport-ului.
+reason_en=Added an option to enable or disable automatic report detection.
 
 
 
