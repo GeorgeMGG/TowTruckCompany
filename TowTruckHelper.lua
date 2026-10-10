@@ -240,16 +240,18 @@ local translations = {
         sell_kit = "Sell Kit",
         repair_refill_me = "Repair/Refill ME",
         mouse_detect = "Detectare ID cu Mouse",
+        at_auto_dl = "Auto Dovezi Tractare",
         key = "TASTA",
         none = "NIMIC",
         desc_ls = "Acesta comanda alege orasul LS",
         desc_lv = "Acesta comanda alege orasul LV",
         desc_sf = "Acesta comanda alege orasul SF",
-        desc_at = "Trimite /s Atentie tractez!",
+        desc_at = "Trimite /s Atentie tractez!\nPoti dezactiva auto screenshot-ul si auto /dl-ul mai sus in setari.",
         desc_rr = "Ofera repair/refill jucatorilor din jur.",
         desc_sk = "Ofera repair kit jucatorilor din jur.",
         desc_rrme = "Acest mod iti ofera repair/refill",
         desc_mouse_detect = "Tine tasta setata si click dreapta pe un player pentru a deschide radial menu cu Repair/Refill, SellKit, Refill si Repair.",
+        desc_at_auto_dl = "Activeaza sau dezactiveaza auto /dl si screenshot-ul automat pentru Atentie Tractez.",
         key_dialog_title = "Setare Tasta",
         key_dialog_msg = "Alege pe ce tasta vrei sa fie comanda",
         press_key = "Apasa orice tasta acum...",
@@ -268,6 +270,8 @@ local translations = {
         color_settings = "CULOARE MENIU",
         textdraw_settings = "Alte setari",
         enable_textdraw = "Activeaza Textdraw",
+        auto_raport_detect = "Detectare automata raport",
+        desc_auto_raport_detect = "Activeaza/Dezactiveaza detectarea automata a raport-ului.",
         loading_screen = "Ecran de incarcare",
         menu_open_cmd = "Comanda deschidere meniu",
         menu_open_key = "Tasta deschidere meniu",
@@ -431,16 +435,18 @@ local translations = {
         sell_kit = "Sell Kit",
         repair_refill_me = "Repair/Refill ME",
         mouse_detect = "Mouse Detection",
+        at_auto_dl = "Auto Towing Proof",
         key = "KEY",
         none = "NONE",
         desc_ls = "This command selects LS city",
         desc_lv = "This command selects LV city",
         desc_sf = "This command selects SF city",
-        desc_at = "Attention, I am towing!",
+        desc_at = "Sends /s Attention towing!\nYou can disable the automatic screenshot and auto /dl above in settings.",
         desc_rr = "Offers repair/refill to nearby players.",
         desc_sk = "Offers repair kit to nearby players.",
         desc_rrme = "This mod offers you repair/refill",
         desc_mouse_detect = "Hold the selected key and right click a player to open the radial menu with Repair/Refill, SellKit, Refill and Repair.",
+        desc_at_auto_dl = "Enable or disable the automatic /dl command and automatic screenshot for Attention Towing.",
         key_dialog_title = "Set Key",
         key_dialog_msg = "Choose a key for command",
         press_key = "Press any key now...",
@@ -459,6 +465,8 @@ local translations = {
         color_settings = "MENU COLOR",
         textdraw_settings = "Other settings",
         enable_textdraw = "Enable Textdraw",
+        auto_raport_detect = "Automatic report detection",
+        desc_auto_raport_detect = "Enable/Disable automatic report detection.",
         loading_screen = "Loading screen",
         menu_open_cmd = "Menu open command",
         menu_open_key = "Menu open key",
@@ -602,6 +610,7 @@ local cfg_default = {
         menu_color_g = 0,
         menu_color_b = 255,
         textdraw_enabled = false,
+        auto_raport_detect_enabled = true,
         hide_server_speedo = false,
         speedo_probe = false,
         window_bg_r = 26,
@@ -689,6 +698,7 @@ local cfg_default = {
         tow_sf_key = 0,
         at_enabled = false,
         at_key = 0,
+        at_auto_dl_enabled = true,
         repair_refill_enabled = false,
         repair_refill_key = 0,
         sellkit_enabled = false,
@@ -748,6 +758,7 @@ if cfg.settings.menu_color_r == nil then
     cfg.settings.menu_color_b = 255 
 end
 if cfg.settings.textdraw_enabled == nil then cfg.settings.textdraw_enabled = false end
+if cfg.settings.auto_raport_detect_enabled == nil then cfg.settings.auto_raport_detect_enabled = true end
 if cfg.settings.hide_server_speedo == nil then cfg.settings.hide_server_speedo = false end
 if cfg.settings.speedo_probe == nil then cfg.settings.speedo_probe = false end
 if cfg.settings.update_auto_check == nil then cfg.settings.update_auto_check = true end
@@ -793,6 +804,7 @@ if cfg.settings.music_enabled == nil then cfg.settings.music_enabled = true end
 if cfg.settings.music_volume == nil then cfg.settings.music_volume = 50 end
 if cfg.settings.mouse_detect_enabled == nil then cfg.settings.mouse_detect_enabled = false end
 if cfg.settings.mouse_detect_key == nil then cfg.settings.mouse_detect_key = 0 end
+if cfg.settings.at_auto_dl_enabled == nil then cfg.settings.at_auto_dl_enabled = true end
 if cfg.settings.textdraw_pos_x == nil then cfg.settings.textdraw_pos_x = 0 end
 if cfg.settings.textdraw_pos_y == nil then cfg.settings.textdraw_pos_y = 0 end
 for i = 1, 10 do
@@ -1188,10 +1200,14 @@ local function scheduleDutyHudInitialRequests()
             return
         end
         requestTowpoints()
-        wait(500)
-        requestRaport()
+        if cfg.settings.auto_raport_detect_enabled then
+            wait(500)
+            requestRaport()
+            nextRaportAt = os.clock() + 30
+        else
+            nextRaportAt = 0.0
+        end
         nextTowpointsRefreshAt = os.clock() + 30
-        nextRaportAt = os.clock() + 30
         dutyInitialRequestsScheduled = false
     end)
 end
@@ -1211,8 +1227,10 @@ local function runStartupHudBootstrap()
         sampSendChat("/duty")
         wait(5000)
         requestTowpoints()
-        wait(500)
-        requestRaport()
+        if cfg.settings.auto_raport_detect_enabled then
+            wait(500)
+            requestRaport()
+        end
         wait(1600)
         sampSendChat("/duty")
         wait(4000)
@@ -1807,6 +1825,9 @@ local function runAtentieTractezSequence()
     lua_thread.create(function()
         sampSendChat("/s " .. T("at_tractez1"))
         sampSendChat("/s " .. T("at_tractez2"))
+        if not cfg.settings.at_auto_dl_enabled then
+            return
+        end
         wait(500)
         processDlCommand()
         wait(500)
@@ -2323,14 +2344,19 @@ function main()
                 end
             end
 
-            if nextRaportAt == 0.0 then
-                nextRaportAt = now + raportRefresh
-            end
-            if not raportRequestPending and now >= nextRaportAt then
-                if not sampIsChatInputActive() and not sampIsDialogActive() and not isSampfuncsConsoleActive() then
-                    requestRaport()
+            if cfg.settings.auto_raport_detect_enabled then
+                if nextRaportAt == 0.0 then
                     nextRaportAt = now + raportRefresh
                 end
+                if not raportRequestPending and now >= nextRaportAt then
+                    if not sampIsChatInputActive() and not sampIsDialogActive() and not isSampfuncsConsoleActive() then
+                        requestRaport()
+                        nextRaportAt = now + raportRefresh
+                    end
+                end
+            else
+                raportRequestPending = false
+                nextRaportAt = 0.0
             end
         else
             nextTowpointsRefreshAt = 0.0
@@ -3910,6 +3936,20 @@ function imgui.OnDrawFrame()
                 DrawAeroTopToggle(T("auto_refill"), "refill", refillEnabled, leftLabelX, leftToggleX, rowStartY + (rowGap * 2))
                 DrawAeroTopToggle(T("auto_engine"), "engine", engineEnabled, rightLabelX, rightToggleX, rowStartY)
                 DrawAeroTopToggle(T("fast_cmds"), "cmds", commandsEnabled, rightLabelX, rightToggleX, rowStartY + rowGap)
+                local atAutoDlAeroEnabled = imgui.ImBool(not not cfg.settings.at_auto_dl_enabled)
+                DrawAeroTopToggle(T("at_auto_dl"), "at_auto_dl", atAutoDlAeroEnabled, rightLabelX, rightToggleX, rowStartY + (rowGap * 2), function()
+                    cfg.settings.at_auto_dl_enabled = atAutoDlAeroEnabled.v
+                    inicfg.save(cfg, "TowTruckHelper.ini")
+                end)
+                imgui.SetCursorPos(imgui.ImVec2(rightToggleX + 38, rowStartY + (rowGap * 2) + 4))
+                if imgui.TextDisabled then
+                    imgui.TextDisabled("(?)")
+                else
+                    imgui.Text("(?)")
+                end
+                if imgui.IsItemHovered() then
+                    imgui.SetTooltip(T("desc_at_auto_dl"))
+                end
 
                 imgui.SetCursorPosY(rowStartY + (rowGap * 3) + 8)
                 imgui.Separator()
@@ -3975,6 +4015,32 @@ function imgui.OnDrawFrame()
             ImMovable("tgl_cmds", function()
                 imgui.ToggleButton("##cmds", commandsEnabled)
             end)
+
+            imgui.Spacing()
+
+            ImMovable("lbl_at_auto_dl_top", function()
+                imgui.Text(T("at_auto_dl"))
+            end)
+            imgui.SameLine()
+            imgui.SetCursorPosX(imgui.GetColumnOffset() + imgui.GetColumnWidth() - 55)
+            local atAutoDlTopEnabled = imgui.ImBool(not not cfg.settings.at_auto_dl_enabled)
+            ImMovable("tgl_at_auto_dl_top", function()
+                if imgui.ToggleButton("##at_auto_dl_top", atAutoDlTopEnabled) then
+                    cfg.settings.at_auto_dl_enabled = atAutoDlTopEnabled.v
+                    inicfg.save(cfg, "TowTruckHelper.ini")
+                end
+            end)
+            imgui.SameLine()
+            ImMovable("help_at_auto_dl_top", function()
+                if bzoneTheme then
+                    imgui.TextColored(getAccentColor(), "(?)")
+                else
+                    imgui.TextDisabled("(?)")
+                end
+            end)
+            if imgui.IsItemHovered() then
+                imgui.SetTooltip(T("desc_at_auto_dl"))
+            end
             
             imgui.Columns(1)
             
@@ -4430,6 +4496,18 @@ function imgui.OnDrawFrame()
                 end
             end)
 
+            local autoRaportDetectEnabled = imgui.ImBool(not not cfg.settings.auto_raport_detect_enabled)
+            ImMovable("chk_auto_raport_detect", function()
+                if imgui.Checkbox(T("auto_raport_detect") .. "##auto_raport_detect", autoRaportDetectEnabled) then
+                    cfg.settings.auto_raport_detect_enabled = autoRaportDetectEnabled.v
+                    if not cfg.settings.auto_raport_detect_enabled then
+                        raportRequestPending = false
+                        nextRaportAt = 0.0
+                    end
+                    inicfg.save(cfg, "TowTruckHelper.ini")
+                end
+            end)
+
             ImMovable("chk_hide_speedo", function()
                 if imgui.Checkbox("Ascunde speedometru server", imgui.ImBool(cfg.settings.hide_server_speedo)) then
                     cfg.settings.hide_server_speedo = not cfg.settings.hide_server_speedo
@@ -4513,9 +4591,16 @@ function imgui.OnDrawFrame()
             end)
             local cmdBuf = imgui.ImBuffer(cfg.settings.menu_cmd, 32)
             ImMovable("input_menu_cmd", function()
+                if bzoneTheme then
+                    imgui.PushStyleColor(imgui.Col.Text, imgui.ImVec4(0.0, 0.0, 0.0, 1.0))
+                    imgui.PushStyleColor(imgui.Col.TextSelectedBg, imgui.ImVec4(0.30, 0.55, 0.85, 0.45))
+                end
                 if imgui.InputText("##menucmd", cmdBuf) then
                     cfg.settings.menu_cmd = cmdBuf.v
                     inicfg.save(cfg, "TowTruckHelper.ini")
+                end
+                if bzoneTheme then
+                    imgui.PopStyleColor(2)
                 end
             end)
             
